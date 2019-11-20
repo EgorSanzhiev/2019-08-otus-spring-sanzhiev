@@ -1,4 +1,4 @@
-package ru.otus.spring.esanzhiev.library.services.ex;
+package ru.otus.spring.esanzhiev.library.dao.ex;
 
 public class AuthorValidationException extends RuntimeException {
     public AuthorValidationException(String message) {

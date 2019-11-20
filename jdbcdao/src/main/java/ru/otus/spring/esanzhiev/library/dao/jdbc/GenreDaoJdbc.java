@@ -9,9 +9,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.otus.spring.esanzhiev.library.dao.AuthorDao;
-import ru.otus.spring.esanzhiev.library.dao.ex.AuthorValidationException;
-import ru.otus.spring.esanzhiev.library.domain.Author;
+import ru.otus.spring.esanzhiev.library.dao.GenreDao;
+import ru.otus.spring.esanzhiev.library.dao.ex.GenreValidationException;
+import ru.otus.spring.esanzhiev.library.domain.Genre;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,86 +21,88 @@ import java.util.Optional;
 
 @SuppressWarnings({"ConstantConditions", "SqlNoDataSourceInspection", "SqlDialectInspection"})
 @Repository
-public class AuthorDaoJdbc implements AuthorDao {
+public class GenreDaoJdbc implements GenreDao {
 
     private final NamedParameterJdbcOperations jdbc;
 
-    private final AuthorMapper authorMapper;
+    private final GenreMapper genreMapper;
 
-    private final AuthorResultSetExtractor authorResultSetExtractor;
+    private final GenreResultSetExtractor genreResultSetExtractor;
 
     @Autowired
-    public AuthorDaoJdbc(NamedParameterJdbcOperations jdbc) {
+    public GenreDaoJdbc(NamedParameterJdbcOperations jdbc) {
         this.jdbc = jdbc;
-        authorMapper = new AuthorMapper();
-        authorResultSetExtractor = new AuthorResultSetExtractor();
+        genreMapper = new GenreMapper();
+        genreResultSetExtractor = new GenreResultSetExtractor();
     }
 
     @Override
     public int count() {
-        return this.jdbc.queryForObject("select count(*) from AUTHORS", Collections.emptyMap(), Integer.class);
+        return this.jdbc.queryForObject("select count(*) from GENRES", Collections.emptyMap(), Integer.class);
     }
 
     @Override
-    public long insert(Author author) {
-        validateName(author.getName());
+    public long insert(Genre genre) {
+        String name = genre.getName();
+        validateName(name);
 
         MapSqlParameterSource parameterSource = new MapSqlParameterSource();
-        parameterSource.addValue("name", author.getName());
+        parameterSource.addValue("name", name);
+
         KeyHolder kh = new GeneratedKeyHolder();
-        this.jdbc.update("insert into AUTHORS (`name`) values (:name)", parameterSource, kh);
+        this.jdbc.update("insert into GENRES(`name`) values (:name)", parameterSource, kh);
         return kh.getKey().longValue();
     }
 
     @Override
-    public Optional<Author> getById(long id) {
+    public Optional<Genre> getById(long id) {
         MapSqlParameterSource parameterSource = new MapSqlParameterSource();
         parameterSource.addValue("id", id);
-        Author author = this.jdbc.query("select * from AUTHORS where id=:id", parameterSource, this.authorResultSetExtractor);
-        return Optional.ofNullable(author);
+        Genre genre = this.jdbc.query("select * from GENRES where id=:id", parameterSource, genreResultSetExtractor);
+        return Optional.ofNullable(genre);
     }
 
     @Override
-    public List<Author> getAll() {
-        return this.jdbc.query("select * from AUTHORS", this.authorMapper);
+    public List<Genre> getAll() {
+        return this.jdbc.query("select * from GENRES", genreMapper);
     }
 
     @Override
-    public void update(Author author) {
-        Long id = author.getId();
+    public void update(Genre genre) {
+        Long id = genre.getId();
         if (id == null) {
-            throw new IllegalArgumentException("Author id cannot be null");
+            throw new IllegalArgumentException("Genre id cannot be null");
         }
 
-        String name = author.getName();
+        String name = genre.getName();
         validateName(name);
 
         MapSqlParameterSource parameterSource = new MapSqlParameterSource();
         parameterSource.addValue("id", id);
         parameterSource.addValue("name", name);
-        this.jdbc.update("update AUTHORS set `name`=:name where id=:id", parameterSource);
+        this.jdbc.update("update GENRES set `name`=:name where id=:id", parameterSource);
     }
 
     @Override
     public void delete(long id) {
         MapSqlParameterSource parameterSource = new MapSqlParameterSource();
         parameterSource.addValue("id", id);
-        this.jdbc.update("delete from AUTHORS where id=:id", parameterSource);
+        this.jdbc.update("delete from GENRES where id=:id", parameterSource);
     }
 
     private void validateName(String name) {
         if (name == null || name.isEmpty()) {
-            throw new AuthorValidationException("Author name cannot be empty");
+            throw new GenreValidationException("Genre name cannot be empty");
         }
     }
 
-    private static class AuthorResultSetExtractor implements ResultSetExtractor<Author> {
+    private static class GenreResultSetExtractor implements ResultSetExtractor<Genre> {
         @Override
-        public Author extractData(ResultSet rs) throws SQLException, DataAccessException {
+        public Genre extractData(ResultSet rs) throws SQLException, DataAccessException {
             if (rs.next()) {
                 long id = rs.getLong("id");
                 String name = rs.getString("name");
-                return Author.builder()
+                return Genre.builder()
                         .id(id)
                         .name(name)
                         .build();
@@ -110,14 +112,14 @@ public class AuthorDaoJdbc implements AuthorDao {
         }
     }
 
-    private static class AuthorMapper implements RowMapper<Author> {
+    private static class GenreMapper implements RowMapper<Genre> {
 
         @Override
-        public Author mapRow(ResultSet resultSet, int i) throws SQLException {
+        public Genre mapRow(ResultSet resultSet, int i) throws SQLException {
             long id = resultSet.getLong("id");
             String name = resultSet.getString("name");
 
-            return Author.builder()
+            return Genre.builder()
                     .id(id)
                     .name(name)
                     .build();

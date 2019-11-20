@@ -6,7 +6,6 @@ import ru.otus.spring.esanzhiev.library.dao.AuthorDao;
 import ru.otus.spring.esanzhiev.library.domain.Author;
 import ru.otus.spring.esanzhiev.library.services.AuthorService;
 import ru.otus.spring.esanzhiev.library.services.ex.AuthorNotFoundException;
-import ru.otus.spring.esanzhiev.library.services.ex.AuthorValidationException;
 
 import java.util.List;
 
@@ -21,14 +20,11 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public long insert(@NonNull Author author) {
-        validateName(author.getName());
         return this.authorDao.insert(author);
     }
 
     @Override
     public void update(Author author) {
-        validateName(author.getName());
-
         getById(author.getId());
 
         this.authorDao.update(author);
@@ -50,11 +46,5 @@ public class AuthorServiceImpl implements AuthorService {
         getById(id);
 
         this.authorDao.delete(id);
-    }
-
-    private void validateName(String name) {
-        if (name == null || name.isEmpty()) {
-            throw new AuthorValidationException("Author name cannot be empty");
-        }
     }
 }

@@ -8,7 +8,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.otus.spring.esanzhiev.library.dao.AuthorDao;
 import ru.otus.spring.esanzhiev.library.domain.Author;
 import ru.otus.spring.esanzhiev.library.services.ex.AuthorNotFoundException;
-import ru.otus.spring.esanzhiev.library.services.ex.AuthorValidationException;
 
 import java.util.Optional;
 
@@ -38,17 +37,6 @@ class AuthorServiceImplTest {
 
         long newAuthorId = authorService.insert(Author.builder().name("andrey").build());
         assertEquals(authorIdToBeAdded, newAuthorId);
-    }
-
-    @Test
-    @DisplayName("должен выбрасывать исключение при передаче некорректного имени автора")
-    void shouldFailOnInvalidAuthorName() {
-        AuthorServiceImpl authorService = new AuthorServiceImpl(authorDao);
-
-        assertThrows(
-                AuthorValidationException.class,
-                () -> authorService.insert(Author.builder().build())
-        );
     }
 
     @Test
