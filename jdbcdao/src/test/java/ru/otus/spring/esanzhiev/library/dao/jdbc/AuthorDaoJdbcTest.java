@@ -1,5 +1,6 @@
 package ru.otus.spring.esanzhiev.library.dao.jdbc;
 
+import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,10 +34,10 @@ class AuthorDaoJdbcTest {
     @Test
     @DisplayName("должен возвращать корректного автора по идентификатору")
     void shouldReturnCorrectAuthorById() {
-        assertThat(this.authorDaoJdbc.getById(DEFAULT_AUTHOR_ID)).matches(
-                authorOptional -> authorOptional.isPresent()
-                        && "Pushkin".equals(authorOptional.get().getName())
-        );
+        Condition<Author> isPushkin = new Condition<>(author -> "Pushkin".equals(author.getName()), "Author should be Pushkin");
+
+        assertThat(this.authorDaoJdbc.getById(DEFAULT_AUTHOR_ID))
+                .hasValueSatisfying(isPushkin);
     }
 
     @Test
@@ -47,10 +48,10 @@ class AuthorDaoJdbcTest {
                 .name(newAuthorName)
                 .build());
 
-        assertThat(this.authorDaoJdbc.getById(newAuthorId)).matches(
-                authorOptional -> authorOptional.isPresent() &&
-                        newAuthorName.equals(authorOptional.get().getName())
-        );
+        Condition<Author> authorHasCorrectName = new Condition<>(author -> newAuthorName.equals(author.getName()), "Author should have correct name");
+
+        assertThat(this.authorDaoJdbc.getById(newAuthorId))
+                .hasValueSatisfying(authorHasCorrectName);
     }
 
     @Test
@@ -69,7 +70,9 @@ class AuthorDaoJdbcTest {
                 .id(DEFAULT_AUTHOR_ID)
                 .name(newAuthorName).build());
 
+        Condition<Author> nameHasChanged = new Condition<>(author -> newAuthorName.equals(author.getName()), "Name should change");
+
         assertThat(this.authorDaoJdbc.getById(DEFAULT_AUTHOR_ID))
-                .matches(authorOptional -> authorOptional.isPresent() && newAuthorName.equals(authorOptional.get().getName()));
+                .hasValueSatisfying(nameHasChanged);
     }
 }

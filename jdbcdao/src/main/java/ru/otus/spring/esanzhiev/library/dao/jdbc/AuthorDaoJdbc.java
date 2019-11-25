@@ -1,7 +1,6 @@
 package ru.otus.spring.esanzhiev.library.dao.jdbc;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -11,10 +10,10 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.otus.spring.esanzhiev.library.dao.AuthorDao;
 import ru.otus.spring.esanzhiev.library.dao.ex.AuthorValidationException;
+import ru.otus.spring.esanzhiev.library.dao.jdbc.mappers.AuthorMapper;
+import ru.otus.spring.esanzhiev.library.dao.jdbc.mappers.RowMapperBasedResultSetExtractor;
 import ru.otus.spring.esanzhiev.library.domain.Author;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -25,15 +24,15 @@ public class AuthorDaoJdbc implements AuthorDao {
 
     private final NamedParameterJdbcOperations jdbc;
 
-    private final AuthorMapper authorMapper;
+    private final RowMapper<Author> authorMapper;
 
-    private final AuthorResultSetExtractor authorResultSetExtractor;
+    private final ResultSetExtractor<Author> authorResultSetExtractor;
 
     @Autowired
     public AuthorDaoJdbc(NamedParameterJdbcOperations jdbc) {
         this.jdbc = jdbc;
-        authorMapper = new AuthorMapper();
-        authorResultSetExtractor = new AuthorResultSetExtractor();
+        authorMapper = new AuthorMapper("id", "name");
+        authorResultSetExtractor = new RowMapperBasedResultSetExtractor<>(authorMapper);
     }
 
     @Override
@@ -94,33 +93,4 @@ public class AuthorDaoJdbc implements AuthorDao {
         }
     }
 
-    private static class AuthorResultSetExtractor implements ResultSetExtractor<Author> {
-        @Override
-        public Author extractData(ResultSet rs) throws SQLException, DataAccessException {
-            if (rs.next()) {
-                long id = rs.getLong("id");
-                String name = rs.getString("name");
-                return Author.builder()
-                        .id(id)
-                        .name(name)
-                        .build();
-            } else {
-                return null;
-            }
-        }
-    }
-
-    private static class AuthorMapper implements RowMapper<Author> {
-
-        @Override
-        public Author mapRow(ResultSet resultSet, int i) throws SQLException {
-            long id = resultSet.getLong("id");
-            String name = resultSet.getString("name");
-
-            return Author.builder()
-                    .id(id)
-                    .name(name)
-                    .build();
-        }
-    }
 }

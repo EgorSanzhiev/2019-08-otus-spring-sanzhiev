@@ -1,7 +1,6 @@
 package ru.otus.spring.esanzhiev.library.dao.jdbc;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -11,10 +10,10 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.otus.spring.esanzhiev.library.dao.GenreDao;
 import ru.otus.spring.esanzhiev.library.dao.ex.GenreValidationException;
+import ru.otus.spring.esanzhiev.library.dao.jdbc.mappers.GenreMapper;
+import ru.otus.spring.esanzhiev.library.dao.jdbc.mappers.RowMapperBasedResultSetExtractor;
 import ru.otus.spring.esanzhiev.library.domain.Genre;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -25,15 +24,15 @@ public class GenreDaoJdbc implements GenreDao {
 
     private final NamedParameterJdbcOperations jdbc;
 
-    private final GenreMapper genreMapper;
+    private final RowMapper<Genre> genreMapper;
 
-    private final GenreResultSetExtractor genreResultSetExtractor;
+    private final ResultSetExtractor<Genre> genreResultSetExtractor;
 
     @Autowired
     public GenreDaoJdbc(NamedParameterJdbcOperations jdbc) {
         this.jdbc = jdbc;
-        genreMapper = new GenreMapper();
-        genreResultSetExtractor = new GenreResultSetExtractor();
+        genreMapper = new GenreMapper("id", "name");
+        genreResultSetExtractor = new RowMapperBasedResultSetExtractor<>(genreMapper);
     }
 
     @Override
@@ -93,36 +92,6 @@ public class GenreDaoJdbc implements GenreDao {
     private void validateName(String name) {
         if (name == null || name.isEmpty()) {
             throw new GenreValidationException("Genre name cannot be empty");
-        }
-    }
-
-    private static class GenreResultSetExtractor implements ResultSetExtractor<Genre> {
-        @Override
-        public Genre extractData(ResultSet rs) throws SQLException, DataAccessException {
-            if (rs.next()) {
-                long id = rs.getLong("id");
-                String name = rs.getString("name");
-                return Genre.builder()
-                        .id(id)
-                        .name(name)
-                        .build();
-            } else {
-                return null;
-            }
-        }
-    }
-
-    private static class GenreMapper implements RowMapper<Genre> {
-
-        @Override
-        public Genre mapRow(ResultSet resultSet, int i) throws SQLException {
-            long id = resultSet.getLong("id");
-            String name = resultSet.getString("name");
-
-            return Genre.builder()
-                    .id(id)
-                    .name(name)
-                    .build();
         }
     }
 }
