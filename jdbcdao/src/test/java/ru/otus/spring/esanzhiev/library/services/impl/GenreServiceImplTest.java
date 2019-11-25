@@ -12,8 +12,7 @@ import ru.otus.spring.esanzhiev.library.services.ex.GenreNotFoundException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -35,7 +34,7 @@ class GenreServiceImplTest {
         GenreServiceImpl genreService = new GenreServiceImpl(genreDaoMock);
 
         long newGenreId = genreService.insert(Genre.builder().name("andrey").build());
-        assertEquals(genreIdToBeAdded, newGenreId);
+        assertThat(genreIdToBeAdded).isEqualTo(newGenreId);
     }
 
     @Test
@@ -67,9 +66,7 @@ class GenreServiceImplTest {
                 .getById(nonPresentGenreId);
 
         GenreServiceImpl genreService = new GenreServiceImpl(genreDaoMock);
-        assertThrows(
-                GenreNotFoundException.class,
-                () -> genreService.getById(nonPresentGenreId)
-        );
+        assertThatThrownBy(() -> genreService.getById(nonPresentGenreId))
+                .isInstanceOf(GenreNotFoundException.class);
     }
 }

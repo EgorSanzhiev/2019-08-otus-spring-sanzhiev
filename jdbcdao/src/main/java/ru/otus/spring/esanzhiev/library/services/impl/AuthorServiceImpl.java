@@ -3,8 +3,11 @@ package ru.otus.spring.esanzhiev.library.services.impl;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 import ru.otus.spring.esanzhiev.library.dao.AuthorDao;
+import ru.otus.spring.esanzhiev.library.dao.BookAuthorRelDao;
 import ru.otus.spring.esanzhiev.library.domain.Author;
+import ru.otus.spring.esanzhiev.library.domain.Book;
 import ru.otus.spring.esanzhiev.library.services.AuthorService;
+import ru.otus.spring.esanzhiev.library.services.ex.AuthorHasBooksException;
 import ru.otus.spring.esanzhiev.library.services.ex.AuthorNotFoundException;
 
 import java.util.List;
@@ -13,9 +16,11 @@ import java.util.List;
 public class AuthorServiceImpl implements AuthorService {
 
     private final AuthorDao authorDao;
+    private final BookAuthorRelDao bookAuthorRelDao;
 
-    public AuthorServiceImpl(AuthorDao authorDao) {
+    public AuthorServiceImpl(AuthorDao authorDao, BookAuthorRelDao bookAuthorRelDao) {
         this.authorDao = authorDao;
+        this.bookAuthorRelDao = bookAuthorRelDao;
     }
 
     @Override
@@ -44,6 +49,11 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public void delete(long id) {
         getById(id);
+
+        List<Book> booksByAuthor = this.bookAuthorRelDao.findBooksByAuthorId(id);
+        if (booksByAuthor != null && !booksByAuthor.isEmpty()) {
+            throw new AuthorHasBooksException(id);
+        }
 
         this.authorDao.delete(id);
     }

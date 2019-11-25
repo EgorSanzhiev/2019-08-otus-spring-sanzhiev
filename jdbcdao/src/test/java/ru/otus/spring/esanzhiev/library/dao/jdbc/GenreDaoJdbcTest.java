@@ -11,8 +11,7 @@ import ru.otus.spring.esanzhiev.library.dao.ex.GenreValidationException;
 import ru.otus.spring.esanzhiev.library.domain.Genre;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @JdbcTest
 @ExtendWith(SpringExtension.class)
@@ -50,16 +49,15 @@ class GenreDaoJdbcTest {
                 .name(newGenreName)
                 .build());
 
-        assertThat(this.genreDaoJdbc.getById(newGenreId)).matches(
-                GenreOptional -> GenreOptional.isPresent() &&
-                        newGenreName.equals(GenreOptional.get().getName())
-        );
+        assertThat(this.genreDaoJdbc.getById(newGenreId))
+                .hasValueSatisfying(genre -> assertThat(genre.getName()).isEqualTo(newGenreName));
     }
 
     @Test
     @DisplayName("должен выбросить исключение при добавлении жанра с пустым наименованием")
     void shouldFailOnInsertWithEmptyName() {
-        assertThrows(GenreValidationException.class, () -> this.genreDaoJdbc.insert(Genre.builder().build()));
+        assertThatThrownBy(() -> this.genreDaoJdbc.insert(Genre.builder().build()))
+                .isInstanceOf(GenreValidationException.class);
     }
 
     @Test
@@ -67,7 +65,7 @@ class GenreDaoJdbcTest {
     void shouldDeleteGenre() {
         this.genreDaoJdbc.delete(DEFAULT_GENRE_ID);
 
-        assertEquals(0, this.genreDaoJdbc.count());
+        assertThat(this.genreDaoJdbc.count()).isEqualTo(0);
     }
 
     @Test
@@ -80,12 +78,13 @@ class GenreDaoJdbcTest {
                 .build());
 
         assertThat(this.genreDaoJdbc.getById(DEFAULT_GENRE_ID))
-                .matches(genreOptional -> genreOptional.isPresent() && newGenreName.equals(genreOptional.get().getName()));
+                .hasValueSatisfying(genre -> assertThat(genre.getName()).isEqualTo(newGenreName));
     }
 
     @Test
     @DisplayName("должен выбросить исключение при передаче пустого идентификатора в метод обновления")
     void shouldFailOnUpdateWithNullId() {
-        assertThrows(IllegalArgumentException.class, () -> this.genreDaoJdbc.update(Genre.builder().build()));
+        assertThatThrownBy(() -> this.genreDaoJdbc.update(Genre.builder().build()))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }
