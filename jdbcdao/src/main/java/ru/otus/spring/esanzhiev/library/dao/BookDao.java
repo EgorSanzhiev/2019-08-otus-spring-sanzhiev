@@ -3,13 +3,18 @@ package ru.otus.spring.esanzhiev.library.dao;
 import ru.otus.spring.esanzhiev.library.domain.Book;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface BookDao {
     int count();
 
-    void insert(Book book);
+    long insert(Book book);
 
-    Book getById(long id);
+    void delete(long id);
+
+    void update(Book book);
+
+    Optional<Book> getById(long id);
 
     List<Book> getAll();
 }
