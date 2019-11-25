@@ -14,8 +14,6 @@ public interface BookAuthorRelDao {
 
     void deleteByBookId(long bookId);
 
-    void deleteByAuthorId(long authorId);
-
     List<Book> findBooksByAuthorId(long authorId);
 
     List<Author> findAuthorsByBookId(long bookId);

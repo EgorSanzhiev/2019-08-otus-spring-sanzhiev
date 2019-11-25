@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @Import(GenreDaoJdbc.class)
 class GenreDaoJdbcTest {
 
-    private static final int DEFAULT_GENRE_COUNT = 1;
+    private static final int DEFAULT_GENRE_COUNT = 2;
     private static final long DEFAULT_GENRE_ID = 1L;
 
 
@@ -35,9 +35,8 @@ class GenreDaoJdbcTest {
     @Test
     @DisplayName("должен возвращать корректный жанр по идентификатору")
     void shouldReturnCorrectGenreById() {
-        assertThat(this.genreDaoJdbc.getById(DEFAULT_GENRE_ID)).matches(
-                GenreOptional -> GenreOptional.isPresent()
-                        && "Sci-Fi".equals(GenreOptional.get().getName())
+        assertThat(this.genreDaoJdbc.getById(DEFAULT_GENRE_ID)).hasValueSatisfying(
+                genre -> assertThat(genre.getName()).isEqualTo("Sci-Fi")
         );
     }
 
@@ -65,7 +64,7 @@ class GenreDaoJdbcTest {
     void shouldDeleteGenre() {
         this.genreDaoJdbc.delete(DEFAULT_GENRE_ID);
 
-        assertThat(this.genreDaoJdbc.count()).isEqualTo(0);
+        assertThat(this.genreDaoJdbc.getById(DEFAULT_GENRE_ID)).isNotPresent();
     }
 
     @Test

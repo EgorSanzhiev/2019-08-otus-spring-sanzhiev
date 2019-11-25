@@ -50,13 +50,6 @@ public class BookAuthorRelDaoJdbc implements BookAuthorRelDao {
     }
 
     @Override
-    public void deleteByAuthorId(long authorId) {
-        MapSqlParameterSource parameterSource = new MapSqlParameterSource();
-        parameterSource.addValue("author_id", authorId);
-        this.jdbc.update("delete from BOOK_AUTHOR_REL where author_id=:author_id", parameterSource);
-    }
-
-    @Override
     public List<Book> findBooksByAuthorId(long authorId) {
         MapSqlParameterSource parameterSource = new MapSqlParameterSource();
         parameterSource.addValue("author_id", authorId);
